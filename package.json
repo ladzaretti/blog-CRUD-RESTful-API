@@ -1,0 +1,20 @@
+{
+  "name": "34_crud_mongoose",
+  "version": "1.0.0",
+  "description": "basic mongodb crud app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon -L server"
+  },
+  "author": "gabriel ladzaretti",
+  "license": "MIT",
+  "devDependencies": {
+    "dotenv": "^10.0.0",
+    "nodemon": "^2.0.14"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.0.12"
+  }
+}
