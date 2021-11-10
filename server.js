@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Set Routes
-app.use("/api/blog", blogRoutes);
+app.use("/api/blogs", blogRoutes);
 
 // Connect to DB
 mongoose

@@ -4,7 +4,7 @@ const Blog = require("../model/blog.model");
 exports.create = (req, res) => {
   // Validate request
   if (!req.body.title) {
-    res.status(400).json({ msg: "Title can not be empty!" });
+    res.status(400).json({ msg: "Title must be included!" });
     return;
   }
 
@@ -22,7 +22,7 @@ exports.create = (req, res) => {
     .then((data) => res.json(data))
     .catch((err) => {
       res.status(500).json({
-        message: err.message || "Error occured while creating the blog.",
+        msg: err.message || "Error creating the blog.",
       });
     });
 };
@@ -38,7 +38,7 @@ exports.findAll = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        message: err.message || "Error occurred while retrieving Blogs.",
+        msg: err.message || "Could not retrieve all Blogs.",
       });
     });
 };
@@ -49,11 +49,13 @@ exports.findOne = (req, res) => {
 
   Blog.findById(id)
     .then((data) => {
-      if (!data) res.status(404).json({ msg: "No Blog with id= " + id });
+      if (!data) res.status(404).json({ msg: "No Blog with id=" + id });
       else res.json(data);
     })
     .catch((err) => {
-      res.status(500).json({ msg: "Error retrieving Blog with id=" + id });
+      res
+        .status(500)
+        .json({ msg: "Error while retrieving Blog with id=" + id });
     });
 };
 
@@ -61,29 +63,89 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).json({
-      message: "Data to update can not be empty!",
+      msg: "Data to update can not be empty!",
     });
   }
 
   const id = req.params.id;
 
+  // prevent comments from being overwritten
+  if (req.body.comments) {
+    delete req.body.comments;
+  }
+
   Blog.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then((data) => {
       if (!data) {
         res.status(404).json({
-          message: `Cannot update Blog with id=${id}.`,
+          msg: `Cannot update Blog with id=${id}.`,
         });
-      } else res.json({ message: "Blog updated." });
+      } else res.json({ msg: "Blog updated." });
     })
     .catch((err) => {
       res.status(500).json({
-        message: "Error updating Blog with id=" + id,
+        msg: "Error updating Blog with id=" + id,
+      });
+    });
+};
+
+exports.updateComments = (req, res) => {
+  if (!req.body.comments) {
+    return res.status(400).json({
+      msg: "Comments can not be empty!",
+    });
+  }
+
+  const id = req.params.id;
+
+  Blog.updateOne({ id }, { $push: { comments: req.body.comments } })
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          msg: `Cannot update comments on Blog  with id=${id}.`,
+        });
+      } else res.json({ msg: "Blog updated." });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        msg: err.message || "Error updating Blog with id=" + id,
       });
     });
 };
 
 // Delete a Blog with the specified id in the request
-exports.delete = (req, res) => {};
+exports.delete = (req, res) => {
+  const id = req.params.id;
+  Blog.findByIdAndRemove(id)
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          msg: `Blog post was not found!`,
+        });
+      } else {
+        res.json({
+          msg: "Blog post was deleted successfully!",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        msg: `Could not delete Blog with id=${id}.`,
+      });
+    });
+};
 
 // Delete all Blogs from the database.
-exports.deleteAll = (req, res) => {};
+exports.deleteAll = (req, res) => {
+  Blog.deleteMany({})
+    .then((data) => {
+      res.send({
+        message: `${data.deletedCount} Blogs were deleted successfully!`,
+      });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error occurred while removing Blogs.",
+      });
+    });
+};
