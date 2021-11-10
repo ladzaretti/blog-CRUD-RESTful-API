@@ -53,9 +53,7 @@ exports.findOne = (req, res) => {
       else res.json(data);
     })
     .catch((err) => {
-      res
-        .status(500)
-        .json({ msg: "Error while retrieving Blog with id=" + id });
+      res.status(500).json({ msg: `Error while retrieving Blog id=${id}` });
     });
 };
 
@@ -78,13 +76,13 @@ exports.update = (req, res) => {
     .then((data) => {
       if (!data) {
         res.status(404).json({
-          msg: `Cannot update Blog with id=${id}.`,
+          msg: `Cannot update Blog id=${id}.`,
         });
       } else res.json({ msg: "Blog updated." });
     })
     .catch((err) => {
       res.status(500).json({
-        msg: "Error updating Blog with id=" + id,
+        msg: `Error updating Blog id=${id}`,
       });
     });
 };
@@ -97,18 +95,67 @@ exports.updateComments = (req, res) => {
   }
 
   const id = req.params.id;
-
-  Blog.updateOne({ id }, { $push: { comments: req.body.comments } })
+  Blog.findByIdAndUpdate(
+    id,
+    { $push: { comments: req.body.comments } },
+    { useFindAndModify: false }
+  )
     .then((data) => {
       if (!data) {
         res.status(404).json({
-          msg: `Cannot update comments on Blog  with id=${id}.`,
+          msg: `Cannot update comments on Blog id=${id}.`,
         });
       } else res.json({ msg: "Blog updated." });
     })
     .catch((err) => {
       res.status(500).json({
-        msg: err.message || "Error updating Blog with id=" + id,
+        msg: err.message || `Error updating Blog id=${id}`,
+      });
+    });
+};
+
+// Delete all comments in a given blog
+exports.deleteComments = (req, res) => {
+  const id = req.params.id;
+
+  Blog.findByIdAndUpdate(
+    id,
+    { $set: { comments: [] } },
+    { useFindAndModify: false }
+  )
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          msg: `Cannot delete comments on Blog id=${id}.`,
+        });
+      } else res.json({ msg: `Deleted comments on Blog id=${id}.` });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        msg: err.message || `Error deleting comments on blog  id=${id}`,
+      });
+    });
+};
+
+// Delete specific comment
+exports.deleteComment = (req, res) => {
+  const id = req.params.id;
+  const _id = req.params._id;
+  Blog.findByIdAndUpdate(
+    id,
+    { $pull: { comments: { _id: _id } } },
+    { useFindAndModify: false }
+  )
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          msg: `Cannot delete comments on Blog id=${id}.`,
+        });
+      } else res.json({ msg: `Deleted comments on Blog id=${id}.` });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        msg: err.message || `Error deleting comments on blog  id=${id}`,
       });
     });
 };
@@ -130,7 +177,7 @@ exports.delete = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        msg: `Could not delete Blog with id=${id}.`,
+        msg: `Could not delete Blog id=${id}.`,
       });
     });
 };

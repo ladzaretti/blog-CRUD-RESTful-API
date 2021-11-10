@@ -4,7 +4,8 @@ const router = express.Router();
 
 // /api/blog: GET, POST, DELETE
 // /api/blog/:id: GET, PATCH, DELETE
-// /api/blog/:id/comments: patch
+// /api/blog/:id/comments: patch delete
+// /api/blog/:id/comments/:_id delete
 
 // Create a new Blog
 router.post("/", blog.create);
@@ -20,6 +21,12 @@ router.patch("/:id", blog.update);
 
 // Update Comments on Blog with id
 router.patch("/:id/comments", blog.updateComments);
+
+// Delete Comments on Blog with id
+router.delete("/:id/comments", blog.deleteComments);
+
+// Delete Comment with given id on Blog with id
+router.delete("/:id/comments/:_id", blog.deleteComment);
 
 // Delete a Blog with id
 router.delete("/:id", blog.delete);
